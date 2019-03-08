@@ -6,37 +6,79 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <vector>
 
 int main(int argc, char *argv[])
 {
+    int lineok = 0;
     std::string line;
+    std::string searchtext;
+    std::string outputfilename;
     std::ifstream infile;
     std::ofstream outfile;
 
     if(argc == 1)
     {
         std::cout << "No file given, exiting!" << std::endl;
+        return 1;
     }
 
-    infile.open(argv[1]);
-    outfile.open("outputfile.brd"); //TODO: have outputfile follow naming of inputfile
+    if(std::string(argv[1]) == "--help" || std::string(argv[1]) == "-h")
+    {
+        std::cout << "Usage:" << std::endl;
+        std::cout << argv[0] << " [Layers] [File]" << std::endl;
+        std::cout << "Layers: default is all silk layers: 21, 22, 25, 26, 27 ,28" << std::endl;
+        std::cout << "Example: " << argv[0] << " 21 22 demo.brd" << std::endl;
+        return 0;
+    }
+
+    infile.open(argv[argc-1]);
 
     if (!infile.is_open())
     {
-        std::cout << "Unable to open file: " << argv[1] << std::endl;
+        std::cout << "Unable to open file: " << argv[argc-1] << std::endl;
+        return 1;
     }
+
+    //opens or creates output file with modified name
+    outputfilename = argv[argc-1];
+    outputfilename.erase(outputfilename.find(".brd",0), 4);
+    outputfilename += "_clean.brd";    
+    outfile.open(outputfilename);
 
     if(!outfile.is_open())
     {
         std::cout << "Unable to open file: " << "outputfile.brd" << std::endl;
     }
 
-    while ( getline (infile,line) )
+    while (getline(infile, line))
     {
-        //if line found does not contain tPlace put to output file
-        if(line.find("layer=\"21\"",0) == std::string::npos)
+        lineok = 1;
+        if(argc > 2){
+            for(int i = 1; i < argc-1; i++)
+            {
+                searchtext.clear();
+                searchtext += "layer=\"";
+                searchtext += argv[i];
+                searchtext += "\"";
+
+                if(line.find(searchtext, 0) != std::string::npos) lineok = 0;
+            }
+        }
+        else
+        {
+            //if line found does not contain tPlace put to output file
+            if(line.find("layer=\"21\"",0) != std::string::npos) lineok = 0;
+            if(line.find("layer=\"22\"",0) != std::string::npos) lineok = 0;
+            if(line.find("layer=\"25\"",0) != std::string::npos) lineok = 0;
+            if(line.find("layer=\"26\"",0) != std::string::npos) lineok = 0;
+            if(line.find("layer=\"27\"",0) != std::string::npos) lineok = 0;
+            if(line.find("layer=\"28\"",0) != std::string::npos) lineok = 0;
+        }
+        if(lineok == 1)
             outfile << line << '\n';
     }
 
     infile.close(); 
+    outfile.close(); 
 }
