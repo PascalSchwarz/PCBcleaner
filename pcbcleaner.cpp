@@ -54,7 +54,9 @@ int main(int argc, char *argv[])
     while (getline(infile, line))
     {
         lineok = 1;
+
         if(argc > 2){
+            //remove given layers
             for(int i = 1; i < argc-1; i++)
             {
                 searchtext.clear();
@@ -67,7 +69,7 @@ int main(int argc, char *argv[])
         }
         else
         {
-            //if line found does not contain tPlace put to output file
+            //default settings, remove all silk layers
             if(line.find("layer=\"21\"",0) != std::string::npos) lineok = 0;
             if(line.find("layer=\"22\"",0) != std::string::npos) lineok = 0;
             if(line.find("layer=\"25\"",0) != std::string::npos) lineok = 0;
@@ -75,9 +77,13 @@ int main(int argc, char *argv[])
             if(line.find("layer=\"27\"",0) != std::string::npos) lineok = 0;
             if(line.find("layer=\"28\"",0) != std::string::npos) lineok = 0;
         }
+
+        //if line does not contain any of the layers to be removed add it to output file
         if(lineok == 1)
             outfile << line << '\n';
     }
+
+    std::cout << "PCBcleaner done! Please check result file for errors!" << std::endl;
 
     infile.close(); 
     outfile.close(); 
